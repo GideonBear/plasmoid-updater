@@ -115,7 +115,7 @@ fn render_row(state: &TaskState, width: usize) -> String {
 
 fn render_complete_row(state: &TaskState, time_str: &str, width: usize) -> String {
     let (icon_color, icon, status_color, status_label) = match state.status {
-        TaskStatus::Succeeded => (GREEN, '✓', GREEN, "Updated"),
+        TaskStatus::Succeeded => (GREEN, '✓', GREEN, "Done"),
         _ => (RED, '✗', RED, "Failed"),
     };
 
