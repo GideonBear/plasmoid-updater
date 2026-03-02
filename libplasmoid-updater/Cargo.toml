@@ -2,7 +2,7 @@
 name = "libplasmoid-updater"
 version = "0.1.3"
 edition = "2024"
-license = "MIT OR Apache-2.0"
+license = "GPL-3.0-or-later"
 description = "Library for updating KDE Plasma 6 components from the KDE Store. Meant for use in topgrade."
 keywords = ["kde", "plasma", "widgets", "updater", "plasmoid"]
 categories = ["development-tools"]

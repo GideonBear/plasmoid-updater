@@ -1,4 +1,5 @@
-// SPDX-License-Identifier: MIT OR Apache-2.0
+// SPDX-FileCopyrightText: 2025 uwuclxdy
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 mod cli_config;
 mod exit_code;
@@ -13,6 +14,13 @@ use libplasmoid_updater::{UpdateError, check, show_installed, update};
 #[command(name = "plasmoid-updater")]
 #[command(about = "update kde plasma components from the kde store")]
 #[command(version)]
+#[command(long_version = concat!(
+    env!("CARGO_PKG_VERSION"),
+    "\nCopyright (C) 2025 uwuclxdy",
+    "\nLicense GPLv3+: GNU GPL version 3 or later <https://gnu.org/licenses/gpl.html>",
+    "\nThis is free software: you are free to change and redistribute it.",
+    "\nThere is NO WARRANTY, to the extent permitted by law.",
+))]
 #[command(disable_help_subcommand = true)]
 struct Cli {
     #[command(subcommand)]

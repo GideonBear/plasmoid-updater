@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT OR Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 //
 // ID resolution approach based on Apdatifier (https://github.com/exequtic/apdatifier) - MIT License
 

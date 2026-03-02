@@ -102,4 +102,4 @@ As a reference CLI-tool implementation, see [`plasmoid-updater`](https://crates.
 
 ## License
 
-Licensed under MIT OR Apache-2.0.
+Licensed under [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).

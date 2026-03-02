@@ -1,7 +1,8 @@
-// SPDX-License-Identifier: MIT OR Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 //
 // Installation logic based on Apdatifier (https://github.com/exequtic/apdatifier) - MIT License
-// and KDE Discover (https://invent.kde.org/plasma/discover) - GPL-2.0+/LGPL-2.0+
+// and KDE Discover (https://invent.kde.org/plasma/discover) -
+// GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 
 use std::{
     fs,

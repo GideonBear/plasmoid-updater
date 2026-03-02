@@ -1,8 +1,10 @@
-// SPDX-License-Identifier: MIT OR Apache-2.0
+// SPDX-FileCopyrightText: 2025 uwuclxdy
+// SPDX-License-Identifier: GPL-3.0-or-later
 //
 // This implementation is based on:
 // - Apdatifier (https://github.com/exequtic/apdatifier) - MIT License
-// - KDE Discover's KNewStuff backend (https://invent.kde.org/plasma/discover) - GPL-2.0+/LGPL-2.0+
+// - KDE Discover's KNewStuff backend (https://invent.kde.org/plasma/discover) -
+//   GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 //
 // The update detection algorithm, KDE Store API interaction, and widget ID resolution
 // approach are derived from Apdatifier's shell scripts. The KNewStuff registry format

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 #[cfg(feature = "cli")]
 use crate::cli::{self, progress::create_fetch_spinner};
 #[cfg(feature = "cli")]

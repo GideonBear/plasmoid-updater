@@ -1,6 +1,7 @@
-// SPDX-License-Identifier: MIT OR Apache-2.0
+// SPDX-License-Identifier: GPL-3.0-or-later
 //
-// KNewStuff registry format based on KDE Discover (https://invent.kde.org/plasma/discover) - GPL-2.0+/LGPL-2.0+
+// KNewStuff registry format based on KDE Discover (https://invent.kde.org/plasma/discover) -
+// GPL-2.0-only OR GPL-3.0-only OR LicenseRef-KDE-Accepted-GPL
 
 use std::path::{Path, PathBuf};
 

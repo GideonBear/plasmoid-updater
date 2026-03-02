@@ -82,7 +82,7 @@ Please open a GitHub issue for any bugs that you may find.
 
 ## License
 
-Licensed under MIT OR Apache-2.0.
+Licensed under [GPL-3.0-or-later](https://www.gnu.org/licenses/gpl-3.0.html).
 
 ## Acknowledgments & Credits
 

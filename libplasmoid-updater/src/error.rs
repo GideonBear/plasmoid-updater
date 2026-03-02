@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+
 /// Internal errors that can occur during plasmoid-updater operations.
 #[derive(thiserror::Error, Debug)]
 pub enum Error {
