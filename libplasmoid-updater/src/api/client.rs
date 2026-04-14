@@ -32,21 +32,15 @@ pub(crate) struct ApiClient {
     request_count: Arc<AtomicUsize>,
 }
 
-impl Default for ApiClient {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 impl ApiClient {
     /// Creates a new API client with default configuration.
     ///
-    /// # Panics
+    /// # Errors
     ///
-    /// Panics if the HTTP client cannot be created (e.g., TLS backend unavailable).
-    pub fn new() -> Self {
+    /// Returns an error if the HTTP client cannot be created
+    /// (for example, if the TLS backend is unavailable).
+    pub fn new() -> Result<Self> {
         Self::with_config(&DEFAULT_API_CONFIG)
-            .unwrap_or_else(|e| panic!("failed to create API client: {e}"))
     }
 
     /// Creates a new API client with the given configuration.
@@ -119,16 +113,8 @@ impl ApiClient {
             .collect();
 
         let mut all_entries = first_entries;
-        let mut error_count = 0usize;
-        for result in results {
-            match result {
-                Ok((entries, _)) => all_entries.extend(entries),
-                Err(_) => error_count += 1,
-            }
-        }
-
-        if error_count > 0 {
-            log::warn!(target: "api", "{error_count} page{} failed to fetch", if error_count == 1 { "" } else { "s" });
+        for (entries, _) in results.into_iter().collect::<Result<Vec<_>>>()? {
+            all_entries.extend(entries);
         }
 
         Ok(all_entries)
@@ -169,16 +155,20 @@ impl ApiClient {
             let xml = r.text()?;
             match parse_ocs_response(&xml) {
                 Ok(result) => return Ok(result),
-                // OCS rate limit with Retry-After: respect it with a single retry.
-                Err(Error::RateLimited) if retry_after_secs.is_some() => {
-                    return self.send_after(url, retry_after_secs.unwrap());
+                Err(Error::RateLimited) => {
+                    if let Some(secs) = retry_after_secs {
+                        return self.send_after(url, secs);
+                    }
+                    if attempt + 1 < self.config.max_retries {
+                        thread::sleep(Duration::from_millis(backoff_ms.into()));
+                        backoff_ms = backoff_ms.saturating_mul(2);
+                        continue;
+                    }
+                    return Err(Error::RateLimited);
                 }
-                // Retry transient errors (including OCS rate limit without Retry-After).
                 // ApiError is a deterministic OCS status — retrying wastes a request.
-                Err(ref e)
-                    if !matches!(e, Error::ApiError(_))
-                        && attempt + 1 < self.config.max_retries =>
-                {
+                Err(Error::ApiError(status)) => return Err(Error::ApiError(status)),
+                Err(_) if attempt + 1 < self.config.max_retries => {
                     thread::sleep(Duration::from_millis(backoff_ms.into()));
                     backoff_ms = backoff_ms.saturating_mul(2);
                 }

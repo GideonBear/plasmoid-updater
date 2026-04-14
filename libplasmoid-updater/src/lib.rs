@@ -49,7 +49,7 @@ pub type Result<T> = std::result::Result<T, Error>;
 pub fn check(config: &Config) -> Result<CheckResult> {
     crate::utils::validate_environment(config.skip_plasma_detection)?;
 
-    let api_client = ApiClient::new();
+    let api_client = ApiClient::new()?;
     let result = crate::utils::fetch_updates(&api_client, config)?;
 
     #[cfg(feature = "cli")]
@@ -116,7 +116,7 @@ pub fn update(config: &Config) -> Result<UpdateResult> {
     let _lock = installer::UpdateLock::acquire()?;
     crate::utils::validate_environment(config.skip_plasma_detection)?;
 
-    let api_client = ApiClient::new();
+    let api_client = ApiClient::new()?;
     let check_result = crate::utils::fetch_updates(&api_client, config)?;
 
     if check_result.updates.is_empty() {
@@ -251,7 +251,7 @@ pub fn install_update(update: &AvailableUpdate, config: &Config) -> Result<()> {
         installer::InhibitGuard::None
     };
 
-    let api_client = ApiClient::new();
+    let api_client = ApiClient::new()?;
     let counter = api_client.request_counter();
     installer::update_component(update, api_client.http_client(), |_| {}, &counter).map(|_| ())
 }
