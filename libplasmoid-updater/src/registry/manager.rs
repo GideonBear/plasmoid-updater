@@ -43,16 +43,14 @@ impl RegistryManager {
     }
 
     /// Loads entries into a map keyed by directory name.
-    pub(crate) fn load_entry_map(&self) -> HashMap<String, RegistryEntry> {
-        let Ok(entries) = self.read_entries() else {
-            return HashMap::new();
-        };
-        entries
+    pub(crate) fn load_entry_map(&self) -> Result<HashMap<String, RegistryEntry>> {
+        let entries = self.read_entries()?;
+        Ok(entries
             .into_iter()
             .filter_map(|e| {
                 let dir_name = utils::extract_directory_name(&e.installed_path)?;
                 Some((dir_name, e))
             })
-            .collect()
+            .collect())
     }
 }

@@ -48,8 +48,8 @@ pub(crate) fn find_installed(system: bool) -> Result<Vec<InstalledComponent>> {
         let shared_types = component_type.shared_path_types();
         let registry_maps: Vec<_> = shared_types
             .iter()
-            .map(|&ct| (ct, registry::load_registry_map(ct)))
-            .collect();
+            .map(|&ct| Ok((ct, registry::load_registry_map(ct)?)))
+            .collect::<Result<_>>()?;
 
         let discovered = scan_directory(&path, component_type, system, &registry_maps)?;
         components.extend(discovered);

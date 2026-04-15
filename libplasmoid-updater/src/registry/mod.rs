@@ -49,10 +49,14 @@ pub(crate) fn scan_registry_components(
 
 /// Loads registry entries into a map keyed by directory name.
 /// Used to look up release dates for installed components.
-pub(crate) fn load_registry_map(component_type: ComponentType) -> HashMap<String, RegistryEntry> {
-    RegistryManager::for_component_type(component_type)
-        .map(|m| m.load_entry_map())
-        .unwrap_or_default()
+pub(crate) fn load_registry_map(
+    component_type: ComponentType,
+) -> Result<HashMap<String, RegistryEntry>> {
+    let Some(manager) = RegistryManager::for_component_type(component_type) else {
+        return Ok(HashMap::new());
+    };
+
+    manager.load_entry_map()
 }
 
 /// Returns the filesystem path to the KNewStuff registry file for a component type.
