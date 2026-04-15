@@ -143,7 +143,7 @@ fn cleanup_old_backups_in(base: &Path, type_subdir: &str, max_keep: usize) {
     for (_, path) in dirs.into_iter().take(to_remove) {
         let type_path = path.join(type_subdir);
         if let Err(e) = fs::remove_dir_all(&type_path) {
-            log::debug!(target: "backup", "failed to remove old backup {}: {e}", type_path.display());
+            log::warn!(target: "backup", "failed to remove old backup {}: {e}", type_path.display());
         }
         // Remove the timestamp dir too if it's now empty
         if path.read_dir().map_or(true, |mut d| d.next().is_none()) {
