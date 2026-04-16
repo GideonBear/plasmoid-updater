@@ -246,10 +246,12 @@ fn install_via_kpackagetool(
     component: &InstalledComponent,
     global: bool,
 ) -> Result<()> {
-    let kpackage_type = component
-        .component_type
-        .kpackage_type()
-        .expect("install_via_kpackagetool called without kpackage_type");
+    let kpackage_type = component.component_type.kpackage_type().ok_or_else(|| {
+        Error::install(format!(
+            "{} does not support kpackagetool6",
+            component.component_type
+        ))
+    })?;
 
     // Try update first -- the common path
     let output = kpackagetool_cmd(kpackage_type, global)

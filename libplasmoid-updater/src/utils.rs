@@ -14,7 +14,7 @@ use crate::{
     api::ApiClient,
     checker::{check_with_components, find_installed},
     installer,
-    types::{AvailableUpdate, UpdateCheckResult},
+    types::{AvailableUpdate, InstalledComponent, UpdateCheckResult},
 };
 
 pub(crate) fn validate_environment(skip_plasma_detection: bool) -> crate::Result<()> {
@@ -155,8 +155,9 @@ pub(crate) fn install_selected_updates(
     updates: &[&AvailableUpdate],
     api_client: &ApiClient,
     config: &Config,
-) -> crate::Result<UpdateResult> {
+) -> crate::Result<(UpdateResult, Vec<InstalledComponent>)> {
     let result = Arc::new(parking_lot::Mutex::new(UpdateResult::default()));
+    let restarted_components = Arc::new(parking_lot::Mutex::new(Vec::new()));
 
     let _inhibit = if config.inhibit_idle {
         installer::InhibitGuard::acquire()
@@ -167,16 +168,13 @@ pub(crate) fn install_selected_updates(
     #[cfg(feature = "cli")]
     let ui = cli::update_ui::UpdateUi::new(updates);
 
-    // 0 = rayon default = number of logical CPUs
-    let thread_count = config.threads.unwrap_or(0);
-    let pool = rayon::ThreadPoolBuilder::new()
-        .num_threads(thread_count)
+    let mut pool_builder = rayon::ThreadPoolBuilder::new();
+    if let Some(thread_count) = config.threads {
+        pool_builder = pool_builder.num_threads(thread_count);
+    }
+    let pool = pool_builder
         .build()
-        .unwrap_or_else(|_| {
-            rayon::ThreadPoolBuilder::new()
-                .build()
-                .expect("failed to build default thread pool")
-        });
+        .map_err(|e| Error::other(format!("failed to build rayon thread pool: {e}")))?;
 
     let counter = api_client.request_counter();
 
@@ -196,6 +194,7 @@ pub(crate) fn install_selected_updates(
                 Ok(outcome) => {
                     #[cfg(feature = "cli")]
                     ui.complete_task(index, true);
+                    restarted_components.lock().push(update.installed.clone());
                     let mut r = result.lock();
                     if !outcome.verified {
                         r.unverified.push(UnverifiedUpdate {
@@ -224,21 +223,21 @@ pub(crate) fn install_selected_updates(
     let result = Arc::into_inner(result).ok_or_else(|| {
         Error::other("install result still had multiple owners after thread pool completion")
     })?;
+    let updated_components = Arc::into_inner(restarted_components).ok_or_else(|| {
+        Error::other(
+            "updated component list still had multiple owners after thread pool completion",
+        )
+    })?;
 
-    Ok(result.into_inner())
+    Ok((result.into_inner(), updated_components.into_inner()))
 }
 
-pub(crate) fn handle_restart(config: &Config, updates: &[AvailableUpdate], result: &UpdateResult) {
-    if result.succeeded.is_empty() {
+pub(crate) fn handle_restart(config: &Config, updated_components: &[InstalledComponent]) {
+    if updated_components.is_empty() {
         return;
     }
 
-    let succeeded_updates: Vec<&AvailableUpdate> = updates
-        .iter()
-        .filter(|u| result.succeeded.contains(&u.installed.name))
-        .collect();
-
-    if !installer::any_requires_restart(&succeeded_updates) {
+    if !installer::any_requires_restart(updated_components) {
         return;
     }
 

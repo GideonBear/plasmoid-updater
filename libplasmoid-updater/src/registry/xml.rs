@@ -90,11 +90,9 @@ pub(super) fn parse_raw_entries(xml: &str) -> Vec<RawEntry> {
                     current = RawEntry::default();
                 }
             }
-            Ok(Event::End(e)) => {
-                if e.name().as_ref() == b"stuff" && in_entry {
-                    entries.push(std::mem::take(&mut current));
-                    in_entry = false;
-                }
+            Ok(Event::End(e)) if e.name().as_ref() == b"stuff" && in_entry => {
+                entries.push(std::mem::take(&mut current));
+                in_entry = false;
             }
             Ok(Event::Text(e)) => {
                 if !in_entry {
@@ -270,24 +268,22 @@ fn find_target_index(xml: &str, directory_name: &str) -> Option<usize> {
                     current_matches = false;
                 }
             }
-            Ok(Event::Text(e)) if in_entry => {
-                if !current_matches
+            Ok(Event::Text(e))
+                if in_entry
+                    && !current_matches
                     && matches!(
                         current_element.as_slice(),
                         b"installedfile" | b"uninstalledfile"
-                    )
-                {
-                    // Check path segments at byte level — no UTF-8 conversion needed.
-                    current_matches = (*e).split(|&b| b == b'/').any(|seg| seg == dir_bytes);
-                }
+                    ) =>
+            {
+                // Check path segments at byte level — no UTF-8 conversion needed.
+                current_matches = (*e).split(|&b| b == b'/').any(|seg| seg == dir_bytes);
             }
-            Ok(Event::End(e)) => {
-                if e.name().as_ref() == b"stuff" && in_entry {
-                    if current_matches {
-                        return entry_index;
-                    }
-                    in_entry = false;
+            Ok(Event::End(e)) if e.name().as_ref() == b"stuff" && in_entry => {
+                if current_matches {
+                    return entry_index;
                 }
+                in_entry = false;
             }
             Ok(Event::Eof) | Err(_) => break,
             _ => {}

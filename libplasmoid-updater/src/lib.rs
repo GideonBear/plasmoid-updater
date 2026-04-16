@@ -112,6 +112,12 @@ impl CheckResult {
 /// # Errors
 ///
 /// Returns an [`Error`] if environment validation, network requests, or installation fails.
+///
+/// For components installed via `kpackagetool6`, a failed update currently triggers a
+/// recovery path that removes the existing package registration and retries installation.
+/// This is intended to recover from stale KPackage database entries, but the retry is not
+/// yet limited to stale-entry failures. If the reinstall also fails, the library restores
+/// files from backup, but the KPackage registration may still be left out of sync.
 pub fn update(config: &Config) -> Result<UpdateResult> {
     let _lock = installer::UpdateLock::acquire()?;
     crate::utils::validate_environment(config.skip_plasma_detection)?;
@@ -135,7 +141,8 @@ pub fn update(config: &Config) -> Result<UpdateResult> {
         return Ok(UpdateResult::default());
     }
 
-    let result = crate::utils::install_selected_updates(&selected, &api_client, config)?;
+    let (result, updated_components) =
+        crate::utils::install_selected_updates(&selected, &api_client, config)?;
 
     #[cfg(feature = "debug")]
     {
@@ -144,7 +151,7 @@ pub fn update(config: &Config) -> Result<UpdateResult> {
         println!("{n} web request{plural}");
     }
 
-    crate::utils::handle_restart(config, &check_result.updates, &result);
+    crate::utils::handle_restart(config, &updated_components);
 
     Ok(result)
 }

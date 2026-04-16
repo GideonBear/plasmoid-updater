@@ -357,7 +357,7 @@ fn handle_installation_failure(
             restore_error: restore_err.to_string(),
         })
     } else {
-        log::info!(target: "restore", "no changes were made");
+        log::info!(target: "restore", "restored component from backup");
         Ok(())
     }
 }
